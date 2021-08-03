@@ -1,0 +1,9 @@
+
+#Modify MySQL Dataset after Full Load is complete in S3
+
+UPDATE dump_schema.Persons set FullName = 'ABC' where PersonId = 1;
+INSERT INTO dump_schema.Persons VALUES (200,'Ross Geller','New York');
+INSERT INTO dump_schema.Persons VALUES (201,'Chandler Bing','Detroit');
+INSERT INTO dump_schema.Persons VALUES (202,'Joey Tribbani','Portland');
+UPDATE dump_schema.Persons set FullName = 'XYZ' where PersonId = 9;
+DELETE FROM dump_schema.Persons where PersonId = 2;

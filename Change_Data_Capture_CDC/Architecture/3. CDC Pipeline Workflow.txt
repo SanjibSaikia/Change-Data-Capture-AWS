@@ -1,0 +1,29 @@
+The entire workflow is divided into two parts :
+
+1. Full Load : Entire Dataset gets loaded completely in S3 bucket. Full Load occurs when the data is saved for the first time.
+2. Change Data Capture (CDC) : Any change made to the existing dataset in local(MySQL database) will automatically update the dataset present in S3 bucket.
+
+
+1. Full Load :
+	
+	-> Create a RDS instance of MySQL in AWS Console.
+	-> Create a Source Endpoint and a Destination Endpoint amd attach it with AWS Data Migration Service(DMS).
+		DMS will read the data from Source Endpoint and load it in Destination Endpoint and the Destination Endpoint will land the data inside Temp S3 bucket.
+
+	-> The data will be available in Temp S3 bucket as a file(csv).
+	-> As soon as the data lands in S3 , S3 will trigger the lambda service and the name of the file(csv) will be provided to Lambda.
+	-> Lambda service will invoke the Glue Service (PySpark job) and Glue will read the file from Temp S3 and load it in Final S3 bucket.
+
+	Note : 
+	*  The concept behind using  two S3 bucket is that , when data lands in Temp S3 bucket Glue Service starts reading the file.If after processing the file 
+	   with PySpark in Glue tha file is saved back in Temp S3 bucket , it will trigger the Glue job again. So the output file of Glue is saved in a new S3 bucket(Final S3). *
+
+2. Change Data capture (CDC) :
+	
+	-> After the first load , the DMS instance won't be stopped.
+	-> The dataset is updated in local MySQL (perform insert, update, delete operation on the dataset).
+	-> The updated dataset will be read by DMS and DMS may create a single file or multiple files of the changes and load the files in Temp S3 bucket.
+	-> Each individual updated file will trigger the Lambda Service.
+	-> The Lambda Service will take the name of the file and put it in the Glue-PySpark job.
+	-> Here , as per the logic if the file is for Full Load pyspark will read the file and write it in Final S3 bucket, 
+		else in case of CDC ,  pyspark will first read the Full Load part file from Final S3 bucket and then read the updated files from Temp S3 and peform the operations(update,insert,delete) on it and update the full load part file and write it back in Final S3 bucket.

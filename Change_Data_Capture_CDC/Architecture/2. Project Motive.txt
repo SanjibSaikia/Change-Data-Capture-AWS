@@ -1,0 +1,5 @@
+The Aim of this POC is to Auto Update the dataset in S3 when any changes are made in MySQL table dataset in local machine.
+
+Brief Intro :
+Data is uploaded from MySQL database to AWS RDS(Relational Database Service) and pushed into AWS S3(Simple Storage Service) bucket.
+Any changes in the data in MySQL(local) will auto reflect in RDS and will result in auto update of dataset in S3 bucket which we uploaded earlier.
